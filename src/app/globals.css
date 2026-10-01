@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/*
+ * Grafite design tokens.
+ * Theme is chosen per dealership (data-theme on <html>); the accent color is injected
+ * per dealership as --accent and --on-accent (see src/lib/theme.ts).
+ */
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #eceef1;
+  --fg: #17191d;
+  --muted: #565c65;
+  --line: #dcdfe4;
+  --line-strong: #c2c7ce;
+  --photo: #e2e5e9;
+  --photo-fg: #c9ced5;
+  --accent: #1f3fbf;
+  --on-accent: #ffffff;
+  --accent-text: var(--accent);
+  --success: #1d7a4e;
+  --warning: #9a5b00;
+  --danger: #b4232c;
+  --overlay: rgb(17 19 22 / 0.55);
+  --shadow: 0 1px 2px rgb(23 25 29 / 0.06), 0 12px 32px rgb(23 25 29 / 0.1);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #111316;
+  --surface: #181b1f;
+  --surface-2: #20242a;
+  --fg: #eceef1;
+  --muted: #a3aab3;
+  --line: #2a2f36;
+  --line-strong: #3b414a;
+  --photo: #1d2126;
+  --photo-fg: #2b3037;
+  --accent-text: color-mix(in oklab, var(--accent) 55%, white);
+  --success: #4fbf87;
+  --warning: #e3a33b;
+  --danger: #f0727a;
+  --overlay: rgb(0 0 0 / 0.65);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.45);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-photo: var(--photo);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-ui: 4px;
+
+  --ease-out-quint: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-float: var(--shadow);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 25%, transparent);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .container-page {
+    width: 100%;
+    max-width: 1360px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+  .select-chevron {
+    appearance: none;
+    padding-right: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M213.7 101.7l-80 80a8 8 0 0 1-11.4 0l-80-80a8 8 0 0 1 11.4-11.4L128 164.7l74.3-74.4a8 8 0 0 1 11.4 11.4Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 12px;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Native <dialog> used for sheets and the gallery lightbox */
+dialog::backdrop {
+  background: var(--overlay);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-in {
+    animation: reveal-in 0.7s var(--ease-out-quint) both;
+  }
+  .reveal-in-late {
+    animation: reveal-in 0.7s var(--ease-out-quint) 0.12s both;
+  }
+  @keyframes reveal-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  dialog[open].sheet {
+    animation: sheet-up 0.35s var(--ease-out-quint);
+  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+}
