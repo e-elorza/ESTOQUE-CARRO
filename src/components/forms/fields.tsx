@@ -153,6 +153,8 @@ export function TextField({
         min={min}
         max={max}
         step={step}
+        spellCheck={type === "email" || type === "password" ? false : undefined}
+        autoCapitalize={type === "email" ? "none" : undefined}
         defaultValue={f.value ?? defaultValue}
         onInput={mask ? onInput : undefined}
         aria-invalid={f.error ? true : undefined}

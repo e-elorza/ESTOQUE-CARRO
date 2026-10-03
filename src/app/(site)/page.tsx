@@ -235,7 +235,7 @@ export default async function HomePage() {
         aria-label="Financiamento e troca"
         className="container-page grid gap-4 py-12 md:grid-cols-2 md:py-16"
       >
-        <div className="flex flex-col justify-between gap-10 rounded-ui bg-fg p-7 text-bg md:p-10">
+        <div className="flex flex-col justify-between gap-10 rounded-ui bg-panel p-7 text-on-panel md:p-10">
           <div className="flex flex-col gap-3">
             <h2 className="text-3xl font-semibold">
               Financie seu próximo carro

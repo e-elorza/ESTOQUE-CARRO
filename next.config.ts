@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
     "*": ["storage/**", "tests/**", "docs/**", "db/**", "scripts/**", ".claude/**", "test-results/**"],
   },
   experimental: {
+    // Small Tailwind CSS + mostly first-time visitors (Instagram, Google): inline it to skip a render-blocking request.
+    inlineCss: true,
     // Photos are resized in the browser first; 4 MB stays under Vercel's 4.5 MB request limit.
     serverActions: { bodySizeLimit: "4mb" },
   },

@@ -90,7 +90,7 @@ export default async function VehiclesPage({ searchParams }: Props) {
             id="busca-veiculo"
             name="q"
             defaultValue={q}
-            placeholder="Buscar marca, modelo ou código"
+            placeholder="Buscar marca, modelo ou código…"
             className={`${inputClass} h-10 pl-9`}
           />
         </form>
@@ -110,7 +110,10 @@ export default async function VehiclesPage({ searchParams }: Props) {
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-ui border border-line bg-surface">
           {vehicles.map((v) => (
-            <li key={v.id}>
+            <li
+              key={v.id}
+              className="[contain-intrinsic-size:auto_84px] [content-visibility:auto]"
+            >
               <Link
                 href={`/admin/veiculos/${v.id}`}
                 className="flex items-center gap-4 px-4 py-3 hover:bg-surface-2"
@@ -121,6 +124,8 @@ export default async function VehiclesPage({ searchParams }: Props) {
                     <img
                       src={v.photos[0].thumb}
                       alt=""
+                      width={80}
+                      height={60}
                       className="h-full w-full object-cover"
                       loading="lazy"
                     />
@@ -139,7 +144,7 @@ export default async function VehiclesPage({ searchParams }: Props) {
                     <span className="font-normal text-muted">{v.version}</span>
                   </p>
                   <p className="tabular truncate text-sm text-muted">
-                    {v.code} · {formatYears(v)} · {formatKm(v.mileageKm)}
+                    {v.code}, {formatYears(v)}, {formatKm(v.mileageKm)}
                   </p>
                 </div>
                 <div className="hidden flex-col items-end gap-1 sm:flex">

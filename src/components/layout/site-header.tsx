@@ -10,11 +10,21 @@ export function Logo({ settings }: { settings: DealershipSettings }) {
   if (settings.logoUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={settings.logoUrl} alt={settings.name} className="h-8 w-auto" />
+      <img
+        src={settings.logoUrl}
+        alt={settings.name}
+        width={160}
+        height={32}
+        className="h-8 w-auto"
+        translate="no"
+      />
     );
   }
   return (
-    <span className="text-[19px] font-semibold tracking-[-0.03em] whitespace-nowrap">
+    <span
+      translate="no"
+      className="text-[19px] font-semibold tracking-[-0.03em] whitespace-nowrap"
+    >
       {settings.name}
     </span>
   );

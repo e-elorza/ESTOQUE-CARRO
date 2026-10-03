@@ -36,7 +36,7 @@ export function MobileNav({
       <dialog
         ref={ref}
         aria-label="Menu"
-        className="sheet m-0 ml-auto h-dvh max-h-dvh w-[min(100%,24rem)] max-w-none bg-surface p-0 text-fg"
+        className="sheet overscroll-contain m-0 ml-auto h-dvh max-h-dvh w-[min(100%,24rem)] max-w-none bg-surface p-0 text-fg"
         onClick={(e) => {
           if (e.target === ref.current) ref.current?.close();
         }}

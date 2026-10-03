@@ -55,6 +55,7 @@ export function PhotoManager({
   const [photos, setPhotos] = useState(initial);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const input = useRef<HTMLInputElement>(null);
 
@@ -192,47 +193,79 @@ export function PhotoManager({
                 );
                 persist(next);
               }}
-              className={`group relative overflow-hidden rounded-ui border border-line bg-surface ${dragId === p.id ? "opacity-50" : ""}`}
+              className={`group relative overflow-hidden rounded-ui border border-line bg-surface select-none ${dragId === p.id ? "opacity-50" : ""}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={p.thumb}
                 alt={`Foto ${i + 1}`}
+                width={480}
+                height={360}
+                draggable={false}
                 className="aspect-[4/3] w-full cursor-grab object-cover"
               />
-              <div className="flex items-center justify-between gap-1 p-1.5">
-                <span className="px-1.5 text-xs font-medium text-muted">
-                  {i === 0 ? "Capa" : `${i + 1}`}
-                </span>
-                <div className="flex">
-                  <button
-                    type="button"
-                    onClick={() => move(i, -1)}
-                    disabled={i === 0}
-                    className="inline-flex size-8 items-center justify-center rounded-ui hover:bg-surface-2 disabled:opacity-30"
-                    aria-label={`Mover foto ${i + 1} para trás`}
-                  >
-                    <ArrowLeft size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => move(i, 1)}
-                    disabled={i === photos.length - 1}
-                    className="inline-flex size-8 items-center justify-center rounded-ui hover:bg-surface-2 disabled:opacity-30"
-                    aria-label={`Mover foto ${i + 1} para frente`}
-                  >
-                    <ArrowRight size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => remove(p.id)}
-                    className="inline-flex size-8 items-center justify-center rounded-ui text-danger hover:bg-surface-2"
-                    aria-label={`Excluir foto ${i + 1}`}
-                  >
-                    <Trash size={16} />
-                  </button>
+              {confirmId === p.id ? (
+                <div
+                  role="group"
+                  aria-label={`Excluir foto ${i + 1}?`}
+                  className="flex items-center justify-between gap-1 p-1.5 text-sm"
+                >
+                  <span className="px-1.5">Excluir?</span>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmId(null);
+                        remove(p.id);
+                      }}
+                      className="inline-flex h-8 items-center rounded-ui bg-danger px-3 font-medium text-white"
+                    >
+                      Excluir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmId(null)}
+                      className="inline-flex h-8 items-center rounded-ui px-2 hover:bg-surface-2"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center justify-between gap-1 p-1.5">
+                  <span className="px-1.5 text-xs font-medium text-muted">
+                    {i === 0 ? "Capa" : `${i + 1}`}
+                  </span>
+                  <div className="flex">
+                    <button
+                      type="button"
+                      onClick={() => move(i, -1)}
+                      disabled={i === 0}
+                      className="inline-flex size-8 items-center justify-center rounded-ui hover:bg-surface-2 disabled:opacity-30"
+                      aria-label={`Mover foto ${i + 1} para trás`}
+                    >
+                      <ArrowLeft size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => move(i, 1)}
+                      disabled={i === photos.length - 1}
+                      className="inline-flex size-8 items-center justify-center rounded-ui hover:bg-surface-2 disabled:opacity-30"
+                      aria-label={`Mover foto ${i + 1} para frente`}
+                    >
+                      <ArrowRight size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmId(p.id)}
+                      className="inline-flex size-8 items-center justify-center rounded-ui text-danger hover:bg-surface-2"
+                      aria-label={`Excluir foto ${i + 1}`}
+                    >
+                      <Trash size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>

@@ -19,9 +19,12 @@
   --on-accent: #ffffff;
   --accent-text: var(--accent);
   --success: #1d7a4e;
-  --warning: #9a5b00;
+  --warning: #874f00;
   --danger: #b4232c;
   --overlay: rgb(17 19 22 / 0.55);
+  /* Emphasis panel: dark in both themes */
+  --panel: #17191d;
+  --on-panel: #f4f5f7;
   --shadow: 0 1px 2px rgb(23 25 29 / 0.06), 0 12px 32px rgb(23 25 29 / 0.1);
   color-scheme: light;
 }
@@ -41,6 +44,7 @@
   --warning: #e3a33b;
   --danger: #f0727a;
   --overlay: rgb(0 0 0 / 0.65);
+  --panel: #23272e;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.45);
   color-scheme: dark;
 }
@@ -54,6 +58,8 @@
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-photo: var(--photo);
+  --color-panel: var(--panel);
+  --color-on-panel: var(--on-panel);
   --color-accent: var(--accent);
   --color-on-accent: var(--on-accent);
   --color-accent-text: var(--accent-text);
@@ -73,6 +79,11 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: color-mix(
+      in oklab,
+      var(--accent) 15%,
+      transparent
+    );
     scroll-padding-top: 5rem;
   }
   body {
@@ -87,6 +98,15 @@
   h3 {
     text-wrap: balance;
     letter-spacing: -0.02em;
+  }
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary {
+    touch-action: manipulation;
   }
   :focus-visible {
     outline: 2px solid var(--accent-text);
@@ -140,10 +160,10 @@ dialog::backdrop {
   .reveal-in-late {
     animation: reveal-in 0.7s var(--ease-out-quint) 0.12s both;
   }
+  /* Slide only, no fade: content counts as painted immediately (keeps LCP fast). */
   @keyframes reveal-in {
     from {
-      opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(14px);
     }
   }
   dialog[open].sheet {

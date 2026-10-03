@@ -90,7 +90,7 @@ export function AdminMobileNav({
       <dialog
         ref={ref}
         aria-label="Menu do painel"
-        className="sheet m-0 h-dvh max-h-dvh w-[min(100%,20rem)] max-w-none bg-surface p-0 text-fg"
+        className="sheet overscroll-contain m-0 h-dvh max-h-dvh w-[min(100%,20rem)] max-w-none bg-surface p-0 text-fg"
         onClick={(e) => e.target === ref.current && ref.current?.close()}
       >
         <div className="flex h-full flex-col gap-4 p-4">

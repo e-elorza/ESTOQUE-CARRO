@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { SubmitButton } from "@/components/admin/buttons";
+import { useUnsavedChanges } from "@/components/admin/use-unsaved-changes";
 import {
   CheckboxField,
   CheckboxGroupField,
@@ -46,6 +47,7 @@ export function VehicleForm({
   vehicle?: Vehicle;
   locations: { id: string; name: string }[];
 }) {
+  const formRef = useUnsavedChanges<HTMLFormElement>();
   const [state, action] = useActionState(saveVehicle, idle);
   const year = new Date().getFullYear();
   const years = Array.from({ length: 30 }, (_, i) => String(year + 1 - i)).map(
@@ -56,7 +58,12 @@ export function VehicleForm({
 
   return (
     <FormStateContext.Provider value={state}>
-      <form action={action} noValidate className="flex flex-col gap-6">
+      <form
+        ref={formRef}
+        action={action}
+        noValidate
+        className="flex flex-col gap-6"
+      >
         {vehicle && <input type="hidden" name="id" value={vehicle.id} />}
         <FormMessage />
 
@@ -176,8 +183,8 @@ export function VehicleForm({
               ]}
             />
             <p className="text-sm text-muted">
-              &quot;Oferta&quot; aparece sozinho quando há preço promocional, e
-              &quot;Novidade&quot; nos primeiros 7 dias.
+              “Oferta” aparece sozinho quando há preço promocional, e “Novidade”
+              nos primeiros 7 dias.
             </p>
           </div>
         </Section>

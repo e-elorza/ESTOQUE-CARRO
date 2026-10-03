@@ -21,10 +21,16 @@ Spec: `docs/SPEC.md` (approved; see section 13 for the backend change). Deploy g
 
 **Tests:** 13 unit tests; 23 Playwright tests (16 public journeys on desktop and mobile, 7 admin journeys, which need a database).
 
+**Quality pass (phases 6 and 7, 2026-10-03):**
+- `web-design-guidelines` review applied: image dimensions, `overscroll-behavior: contain` on dialogs and sheets, no spellcheck on e-mail and password fields, `touch-action: manipulation`, `translate="no"` on the brand name, confirmation before deleting a photo, unsaved-changes warning on the vehicle and settings forms, `content-visibility` on long admin lists. Skipped on purpose: "Title Case" (English convention; pt-BR uses sentence case).
+- Lighthouse (mobile, production build): performance 94–97 in Lighthouse's simulated mode, 96–99 with real throttling; accessibility, best practices and SEO 100 on home, stock, vehicle and financing pages. Real-throttling LCP about 1.0 s on home and vehicle pages, CLS 0. Changes: inline CSS (`experimental.inlineCss`), hero entrance slides without fading so it counts as painted, darker warning color (5.0:1), visible-to-screen-readers sort label on mobile.
+- Dark theme checked on public pages; the financing panel now stays dark in both themes (`--panel` token).
+- `design-taste-frontend` pre-flight: no em-dashes, no eyebrows, no duplicate CTA wording per page, middle dots removed.
+
 ## Next
 
 1. Connect the real Supabase project (see `docs/DEPLOY.md`), then deploy to Vercel.
-2. Phase 6 and 7: `web-design-guidelines` review, Lighthouse, dark theme pass, final pre-flight from `design-taste-frontend`.
+2. Replace placeholder photos with real ones through the admin; re-run Lighthouse with photos.
 3. Phase 2 ideas from the spec: stock feed import, Google reviews, financing simulator, lead alerts, logo upload in Configurações.
 
 ## Running locally with a database

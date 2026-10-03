@@ -128,7 +128,7 @@ export function Gallery({ photos, label }: Props) {
       <dialog
         ref={dialog}
         aria-label="Fotos do veículo"
-        className="m-0 h-dvh max-h-none w-screen max-w-none bg-[#0d0e10] p-0 text-white"
+        className="m-0 h-dvh max-h-none w-screen max-w-none overscroll-contain bg-[#0d0e10] p-0 text-white"
         onKeyDown={(e) => {
           if (e.key === "ArrowRight") step(1);
           if (e.key === "ArrowLeft") step(-1);
@@ -154,6 +154,8 @@ export function Gallery({ photos, label }: Props) {
               <img
                 src={photos[viewer].full}
                 alt={photos[viewer].alt}
+                width={photos[viewer].width}
+                height={photos[viewer].height}
                 className="max-h-full max-w-full object-contain"
               />
             )}
@@ -192,6 +194,8 @@ export function Gallery({ photos, label }: Props) {
                   <img
                     src={p.thumb}
                     alt=""
+                    width={96}
+                    height={72}
                     className="h-full w-24 object-cover"
                     loading="lazy"
                   />

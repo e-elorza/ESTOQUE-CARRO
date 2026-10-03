@@ -85,7 +85,7 @@ export function LocationForm({ location }: { location?: Location }) {
             label="Link do Google Maps"
             hideOptional
             defaultValue={location?.mapsUrl ?? undefined}
-            placeholder="https://maps.google.com/..."
+            placeholder="https://maps.google.com/…"
           />
         </div>
         <TextAreaField

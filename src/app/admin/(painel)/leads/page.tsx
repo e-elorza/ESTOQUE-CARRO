@@ -99,7 +99,10 @@ export default async function LeadsPage({ searchParams }: Props) {
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-ui border border-line bg-surface">
           {leads.map((l) => (
-            <li key={l.id}>
+            <li
+              key={l.id}
+              className="[contain-intrinsic-size:auto_72px] [content-visibility:auto]"
+            >
               <Link
                 href={`/admin/leads/${l.id}`}
                 className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-surface-2 md:grid-cols-[8rem_minmax(0,1.2fr)_minmax(0,1fr)_7rem_auto]"

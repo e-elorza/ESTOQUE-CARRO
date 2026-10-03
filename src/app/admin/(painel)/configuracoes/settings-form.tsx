@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { SubmitButton } from "@/components/admin/buttons";
+import { useUnsavedChanges } from "@/components/admin/use-unsaved-changes";
 import {
   FormMessage,
   FormStateContext,
@@ -37,6 +38,7 @@ function Section({
 }
 
 export function SettingsForm({ settings }: { settings: DealershipSettings }) {
+  const formRef = useUnsavedChanges<HTMLFormElement>();
   const [state, action] = useActionState(saveSettings, idle);
   const [accent, setAccent] = useState(settings.accentColor);
   const validHex = /^#[0-9a-fA-F]{6}$/.test(accent);
@@ -48,7 +50,12 @@ export function SettingsForm({ settings }: { settings: DealershipSettings }) {
 
   return (
     <FormStateContext.Provider value={state}>
-      <form action={action} noValidate className="flex flex-col gap-6">
+      <form
+        ref={formRef}
+        action={action}
+        noValidate
+        className="flex flex-col gap-6"
+      >
         <FormMessage />
 
         <Section title="Identidade">

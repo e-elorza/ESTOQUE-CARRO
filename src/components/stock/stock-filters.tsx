@@ -106,7 +106,7 @@ export function SheetFilters({ index, locations, filters }: Props) {
       <dialog
         ref={ref}
         aria-labelledby="filtros-titulo"
-        className="sheet mx-0 mt-auto mb-0 h-[92dvh] max-h-[92dvh] w-full max-w-none rounded-t-[12px] bg-surface p-0 text-fg"
+        className="sheet overscroll-contain mx-0 mt-auto mb-0 h-[92dvh] max-h-[92dvh] w-full max-w-none rounded-t-[12px] bg-surface p-0 text-fg"
         onClick={(e) => {
           if (e.target === ref.current) ref.current?.close();
         }}
@@ -166,7 +166,7 @@ export function SortSelect({ filters }: { filters: Filters }) {
     <div className="flex items-center gap-2">
       <label
         htmlFor="ordem"
-        className="hidden text-sm whitespace-nowrap text-muted sm:block"
+        className="sr-only text-sm whitespace-nowrap text-muted sm:not-sr-only"
       >
         Ordenar por
       </label>
