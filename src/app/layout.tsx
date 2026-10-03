@@ -1,11 +1,7 @@
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-import { WhatsAppFloat } from "@/components/layout/whatsapp-float";
-import { getLocations, getSettings } from "@/lib/data";
-import { whatsappUrl } from "@/lib/format";
+import { getSettings } from "@/lib/data";
 import { onAccent } from "@/lib/theme";
 import "./globals.css";
 
@@ -31,10 +27,7 @@ export async function generateViewport(): Promise<Viewport> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [settings, locations] = await Promise.all([
-    getSettings(),
-    getLocations(),
-  ]);
+  const settings = await getSettings();
   const style = {
     "--accent": settings.accentColor,
     "--on-accent": onAccent(settings.accentColor),
@@ -54,17 +47,7 @@ export default async function RootLayout({
         >
           Pular para o conteúdo
         </a>
-        <SiteHeader settings={settings} />
-        <main id="conteudo" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter settings={settings} locations={locations} />
-        <WhatsAppFloat
-          href={whatsappUrl(
-            settings.whatsapp,
-            `Olá! Vim pelo site da ${settings.name} e gostaria de falar com um consultor.`,
-          )}
-        />
+        {children}
       </body>
     </html>
   );

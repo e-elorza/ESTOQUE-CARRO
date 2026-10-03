@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { Gallery } from "@/components/vehicle/gallery";
 import { VehicleCard, vehicleBadges } from "@/components/vehicle/vehicle-card";
+import { WhatsAppLink } from "@/components/vehicle/whatsapp-link";
 import {
   getLocations,
   getPublicSlugs,
@@ -285,15 +286,14 @@ export default async function VehiclePage({ params }: Props) {
 
               {!sold && (
                 <div className="flex flex-col gap-3">
-                  <a
+                  <WhatsAppLink
                     href={wa}
-                    target="_blank"
-                    rel="noopener"
+                    vehicleId={v.id}
                     className={buttonClass("whatsapp", "lg", "w-full")}
                   >
                     <WhatsappLogo size={20} weight="fill" aria-hidden />
                     Falar no WhatsApp
-                  </a>
+                  </WhatsAppLink>
                   <Link
                     href={`/financiamento?${query}`}
                     className={buttonClass("secondary", "lg", "w-full")}
@@ -515,15 +515,14 @@ export default async function VehiclePage({ params }: Props) {
             </a>
           ) : (
             <>
-              <a
+              <WhatsAppLink
                 href={wa}
-                target="_blank"
-                rel="noopener"
+                vehicleId={v.id}
                 className={buttonClass("whatsapp", "lg", "flex-1")}
               >
                 <WhatsappLogo size={20} weight="fill" aria-hidden />
                 WhatsApp
-              </a>
+              </WhatsAppLink>
               <a
                 href={telHref(location?.phone ?? settings.phone)}
                 className={buttonClass("secondary", "lg", "px-4")}

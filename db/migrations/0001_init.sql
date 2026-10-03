@@ -1,9 +1,7 @@
--- Initial schema for the white-label dealership site.
--- Apply with the Supabase CLI (`supabase db push`) or paste into the SQL editor.
-
-create extension if not exists "pgcrypto";
-
--- Enums ---------------------------------------------------------------------
+-- Initial schema. Plain PostgreSQL 13+ (works on Supabase, Neon, a VPS, etc.).
+-- The app connects with a privileged role (DATABASE_URL) from the server only.
+-- Row Level Security is enabled with no policies on every table so that, on
+-- Supabase, the auto-generated public REST API cannot read or write anything.
 
 create type transmission as enum ('manual', 'automatico', 'cvt', 'automatizado');
 create type fuel as enum ('flex', 'gasolina', 'diesel', 'hibrido', 'eletrico');
@@ -13,24 +11,38 @@ create type lead_type as enum ('financiamento', 'troca', 'proposta', 'visita', '
 create type lead_status as enum ('novo', 'em_contato', 'negociacao', 'fechado', 'perdido');
 create type site_theme as enum ('light', 'dark');
 
--- Staff ---------------------------------------------------------------------
+create or replace function touch_updated_at() returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
 
-create table profiles (
-  id uuid primary key references auth.users (id) on delete cascade,
-  name text not null default '',
-  role text not null default 'admin' check (role in ('admin')),
+-- Staff and sessions ------------------------------------------------------------
+
+create table staff (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique check (email = lower(email)),
+  name text not null,
+  password_hash text not null,
+  must_change_password boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table sessions (
+  token_hash text primary key,
+  staff_id uuid not null references staff (id) on delete cascade,
+  expires_at timestamptz not null,
   created_at timestamptz not null default now()
 );
 
-create or replace function is_staff() returns boolean
-language sql stable security definer set search_path = public as $$
-  select exists (select 1 from profiles where id = auth.uid());
-$$;
+create index sessions_staff_idx on sessions (staff_id);
 
--- Dealership settings (single row) -------------------------------------------
+-- Dealership settings (single row) ------------------------------------------------
 
 create table dealership_settings (
-  id boolean primary key default true check (id), -- enforces a single row
+  id boolean primary key default true check (id),
   name text not null,
   code_prefix text not null default 'VA' check (code_prefix ~ '^[A-Z]{1,4}$'),
   logo_url text,
@@ -50,10 +62,10 @@ create table dealership_settings (
   updated_at timestamptz not null default now()
 );
 
--- Locations -------------------------------------------------------------------
+-- Locations -----------------------------------------------------------------------
 
 create table locations (
-  id text primary key,
+  id text primary key check (id ~ '^[a-z0-9-]+$'),
   name text not null,
   street text not null,
   district text not null,
@@ -68,9 +80,9 @@ create table locations (
   created_at timestamptz not null default now()
 );
 
--- Vehicles --------------------------------------------------------------------
+-- Vehicles ------------------------------------------------------------------------
 
-create sequence vehicle_code_seq start 140;
+create sequence vehicle_code_seq start 1000;
 
 create table vehicles (
   id uuid primary key default gen_random_uuid(),
@@ -86,9 +98,9 @@ create table vehicles (
   fuel fuel not null,
   body_type body_type not null,
   color text not null,
-  doors smallint not null default 4,
+  doors smallint not null default 4 check (doors between 2 and 5),
   engine text,
-  power_cv int,
+  power_cv int check (power_cv is null or power_cv > 0),
   plate_final smallint check (plate_final between 0 and 9),
   price int not null check (price > 0),
   promo_price int check (promo_price is null or (promo_price > 0 and promo_price < price)),
@@ -104,15 +116,15 @@ create table vehicles (
 );
 
 create index vehicles_listing_idx on vehicles (status, created_at desc);
-create index vehicles_brand_model_idx on vehicles (brand, model);
+create trigger vehicles_touch before update on vehicles for each row execute function touch_updated_at();
 
 create table vehicle_photos (
   id uuid primary key default gen_random_uuid(),
   vehicle_id uuid not null references vehicles (id) on delete cascade,
   position int not null default 0,
-  path_thumb text not null,
-  path_card text not null,
-  path_full text not null,
+  key_thumb text not null,
+  key_card text not null,
+  key_full text not null,
   width int not null,
   height int not null,
   alt text not null default '',
@@ -121,7 +133,7 @@ create table vehicle_photos (
 
 create index vehicle_photos_vehicle_idx on vehicle_photos (vehicle_id, position);
 
--- Leads -------------------------------------------------------------------
+-- Leads -------------------------------------------------------------------------
 
 create table leads (
   id uuid primary key default gen_random_uuid(),
@@ -142,6 +154,7 @@ create table leads (
 );
 
 create index leads_inbox_idx on leads (status, created_at desc);
+create trigger leads_touch before update on leads for each row execute function touch_updated_at();
 
 -- Anonymous WhatsApp click counter (no personal data)
 create table whatsapp_clicks (
@@ -150,34 +163,21 @@ create table whatsapp_clicks (
   created_at timestamptz not null default now()
 );
 
-create index whatsapp_clicks_vehicle_idx on whatsapp_clicks (vehicle_id, created_at desc);
+create index whatsapp_clicks_idx on whatsapp_clicks (created_at desc, vehicle_id);
 
--- Form rate limiting (hashed key, no raw IP stored)
+-- Rate limiting for forms and login (hashed keys, no raw IPs)
 create table rate_limits (
+  bucket text not null,
   key_hash text not null,
   created_at timestamptz not null default now()
 );
 
-create index rate_limits_idx on rate_limits (key_hash, created_at desc);
+create index rate_limits_idx on rate_limits (bucket, key_hash, created_at desc);
 
--- updated_at triggers -----------------------------------------------------------
+-- Lock down Supabase's auto-generated API -------------------------------------------
 
-create or replace function touch_updated_at() returns trigger language plpgsql as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$;
-
-create trigger vehicles_touch before update on vehicles for each row execute function touch_updated_at();
-create trigger leads_touch before update on leads for each row execute function touch_updated_at();
-create trigger settings_touch before update on dealership_settings for each row execute function touch_updated_at();
-
--- Row Level Security ------------------------------------------------------------
--- Public: read published content only. Leads, clicks and rate limits are written by
--- the server with the service role key, never directly from the browser.
-
-alter table profiles enable row level security;
+alter table staff enable row level security;
+alter table sessions enable row level security;
 alter table dealership_settings enable row level security;
 alter table locations enable row level security;
 alter table vehicles enable row level security;
@@ -185,28 +185,3 @@ alter table vehicle_photos enable row level security;
 alter table leads enable row level security;
 alter table whatsapp_clicks enable row level security;
 alter table rate_limits enable row level security;
-
-create policy "public reads settings" on dealership_settings for select using (true);
-create policy "public reads locations" on locations for select using (true);
-create policy "public reads published vehicles" on vehicles for select using (status <> 'rascunho' or is_staff());
-create policy "public reads photos of published vehicles" on vehicle_photos for select using (
-  exists (select 1 from vehicles v where v.id = vehicle_id and (v.status <> 'rascunho' or is_staff()))
-);
-
-create policy "staff reads own profile" on profiles for select using (id = auth.uid());
-create policy "staff manages settings" on dealership_settings for all using (is_staff()) with check (is_staff());
-create policy "staff manages locations" on locations for all using (is_staff()) with check (is_staff());
-create policy "staff manages vehicles" on vehicles for all using (is_staff()) with check (is_staff());
-create policy "staff manages photos" on vehicle_photos for all using (is_staff()) with check (is_staff());
-create policy "staff manages leads" on leads for all using (is_staff()) with check (is_staff());
-create policy "staff reads clicks" on whatsapp_clicks for select using (is_staff());
-
--- Storage bucket for vehicle photos (public read, staff write) ----------------------
-
-insert into storage.buckets (id, name, public) values ('vehicle-photos', 'vehicle-photos', true)
-on conflict (id) do nothing;
-
-create policy "staff uploads photos" on storage.objects for insert to authenticated
-  with check (bucket_id = 'vehicle-photos' and is_staff());
-create policy "staff deletes photos" on storage.objects for delete to authenticated
-  using (bucket_id = 'vehicle-photos' and is_staff());

@@ -14,7 +14,15 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-Sem variáveis de ambiente, o site usa os dados de demonstração em `src/lib/data/seed.ts`. Para conectar o Supabase, copie `.env.example` para `.env.local` e preencha.
+Sem variáveis de ambiente, o site usa os dados de demonstração em `src/lib/data/seed.ts` e o painel fica desativado. Para usar o banco de dados, copie `.env.example` para `.env.local`, preencha `DATABASE_URL` e rode:
+
+```bash
+npm run db:migrate
+npm run db:seed                 # opcional: loja de demonstração
+npm run admin:create -- voce@loja.com.br "Seu Nome"
+```
+
+O painel fica em `/admin`.
 
 ## Verificações
 
@@ -28,8 +36,8 @@ npm run test:e2e     # jornadas no navegador (Playwright), desktop e mobile
 
 ## Onde mudar os dados da loja
 
-Hoje: `src/lib/data/seed.ts` (nome, cores, WhatsApp, unidades, estoque). Depois da conexão com o Supabase: pelo painel em `/admin`.
+Pelo painel em `/admin`: Configurações (nome, cores, WhatsApp, textos), Unidades, Veículos e Equipe.
 
 ## Hospedagem
 
-Build `standalone` do Next.js: roda na Vercel e em qualquer servidor Node.js (plano Node.js da Hostinger ou VPS) sem mudar o código. Detalhes em `docs/DEPLOY.md` (fase final).
+Build `standalone` do Next.js: roda na Vercel e em qualquer servidor Node.js (plano Node.js da Hostinger ou VPS) sem mudar o código. Passo a passo em [`docs/DEPLOY.md`](docs/DEPLOY.md).

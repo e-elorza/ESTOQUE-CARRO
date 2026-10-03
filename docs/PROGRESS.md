@@ -1,33 +1,38 @@
 # Progress
 
-Spec: `docs/SPEC.md` (approved). Branch: `site-v1`.
+Spec: `docs/SPEC.md` (approved; see section 13 for the backend change). Deploy guide: `docs/DEPLOY.md`. Branch: `site-v1`.
 
 ## Done
 
-**Phase 1–3 (setup, shell, public pages)** and most of **phase 4 (lead forms)**, running on demo data:
+**Public site** (phases 1 to 4): home, stock with filters, vehicle page, financing, trade-in, contact (question, proposal, visit), about, privacy policy, 404, sitemap, robots, JSON-LD. Lead forms validate on the server, require consent and are rate limited.
 
-- Next.js 16 + TypeScript + Tailwind v4, standalone output, Geist fonts self-hosted via the `geist` package.
-- Grafite design tokens (light + dark), per-dealership accent with automatic readable text color (`src/lib/theme.ts`).
-- Header, mobile menu, footer, floating WhatsApp button (hidden on vehicle pages).
-- Home: hero with search (brand → model → price range), featured, categories, new arrivals, financing + trade-in panels, "Por que comprar aqui", locations.
-- Stock (`/estoque`): sidebar filters on desktop (live), bottom-sheet filters on mobile with live count, sorting, removable filter chips, pagination, empty state, loading skeleton. Filter state lives in the URL.
-- Vehicle page: mosaic gallery + lightbox (desktop), swipe carousel with counter (mobile), summary and actions, specs, grouped equipment, description, location card, similar cars, mobile action bar, JSON-LD `Car` + `Offer`, sold and reserved states.
-- Forms with server-side validation (zod, pt-BR messages), consent checkbox, honeypot, in-memory rate limit: Financiamento, Venda seu carro / troca, Contato (dúvida, proposta, visita). In demo mode leads are only logged (type + vehicle code, no personal data).
-- Sobre, Política de Privacidade (template, needs legal review), 404 and error pages, sitemap, robots.txt.
-- Supabase schema with RLS and storage bucket: `supabase/migrations/20261001000000_init.sql` (not applied yet).
-- Tests: 13 unit (`npm test`), 16 Playwright journeys on desktop + mobile (`npm run test:e2e`), all passing.
+**Backend:**
+- PostgreSQL via `DATABASE_URL` (`src/lib/db.ts`), schema in `db/migrations/0001_init.sql`, scripts: `npm run db:migrate`, `npm run db:seed`, `npm run admin:create`.
+- Public data cached by tag and refreshed immediately after admin edits (`src/lib/data/index.ts`). Without `DATABASE_URL`, the public site falls back to the demo seed.
+- Leads stored in Postgres; anonymous WhatsApp click counter (`/api/whatsapp-click`).
+- Photo storage: S3-compatible (`S3_*` vars) or local disk served by `/media/...` (`src/lib/storage.ts`).
+
+**Admin** (`/admin`, phase 5):
+- Login with scrypt-hashed passwords and session cookies, login rate limit, forced password change for temporary passwords, logout.
+- Painel: stock and lead numbers, cars without photos, recent leads, WhatsApp clicks (30 days).
+- Veículos: list with search and status tabs; create/edit with full form (pt-BR validation); quick status (disponível, reservado, vendido); duplicate; delete with inline confirmation; photos with browser-side resize, server WebP in 3 sizes (metadata stripped), drag or arrow reordering, cover = first photo.
+- Leads: inbox with status and type filters; detail with "Responder no WhatsApp", call, request details, consent record, status and internal notes, permanent deletion (LGPD requests).
+- Unidades, Configurações (identity, accent color with contrast check, light/dark theme, contacts, "Por que comprar aqui", SEO), Equipe (create access with temporary password, reset, remove), Minha conta.
+
+**Tests:** 13 unit tests; 23 Playwright tests (16 public journeys on desktop and mobile, 7 admin journeys, which need a database).
 
 ## Next
 
-1. **Connect Supabase** (needs the three env vars and network access to `*.supabase.co`, see `.env.example`):
-   - apply the migration; generate `supabase/seed.sql` from `src/lib/data/seed.ts`;
-   - add `@supabase/supabase-js` + `@supabase/ssr`; implement the Supabase branch of `src/lib/data/index.ts` and `src/lib/data/leads.ts` (insert lead, Postgres rate limit with hashed key);
-   - WhatsApp click counter (server action + `whatsapp_clicks`).
-2. **Admin (phase 5):** login (Supabase Auth, `proxy.ts` guard), dashboard, vehicles CRUD with photo upload → `sharp` resize to 3 WebP sizes → Storage, drag-to-reorder, lead inbox with statuses and notes, locations, settings (with accent contrast warning). Revalidate pages with `updateTag`/`revalidatePath` after edits.
-3. **Phase 6–7:** run `web-design-guidelines` review, Lighthouse, dark theme visual pass, final pre-flight from `design-taste-frontend`.
-4. **Phase 8:** Vercel project + `docs/DEPLOY.md` (Vercel now, Hostinger Node.js plan or VPS later).
+1. Connect the real Supabase project (see `docs/DEPLOY.md`), then deploy to Vercel.
+2. Phase 6 and 7: `web-design-guidelines` review, Lighthouse, dark theme pass, final pre-flight from `design-taste-frontend`.
+3. Phase 2 ideas from the spec: stock feed import, Google reviews, financing simulator, lead alerts, logo upload in Configurações.
 
-## Notes
+## Running locally with a database
 
-- Demo photos are intentionally placeholders (user's choice); real photos come through the admin.
-- `/estoque` list lives in the `(lista)` route group so its `loading.tsx` doesn't wrap vehicle pages (otherwise missing cars stream with HTTP 200 instead of 404).
+```bash
+export DATABASE_URL=postgres://postgres@localhost:5433/concessionaria
+npm run db:migrate && npm run db:seed
+ADMIN_PASSWORD=senha-teste-123 npm run admin:create -- admin@valeautomoveis.com.br "Admin Demo"
+npm run build && npm run test:e2e   # cloud sessions: CHROMIUM_PATH=/opt/pw-browsers/chromium
+```
+In cloud sessions a Postgres 16 server is available: initialize a data dir owned by `postgres` and start it on port 5433 with `runuser -u postgres -- pg_ctl ...`.

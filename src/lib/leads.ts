@@ -104,12 +104,4 @@ export const leadSchemas = {
   contato: z.object(base),
 } satisfies Record<LeadType, z.ZodType>;
 
-export type LeadFormState =
-  | { status: "idle" }
-  | { status: "success" }
-  | {
-      status: "error";
-      message?: string;
-      fieldErrors: Record<string, string>;
-      values: Record<string, string>;
-    };
+export type { FormState as LeadFormState } from "./form-state";

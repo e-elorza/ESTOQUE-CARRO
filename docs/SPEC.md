@@ -1,6 +1,6 @@
 # Project specification: white-label dealership website
 
-Status: **awaiting approval**. This document records the decisions made during the product interview (rounds 1 to 5). Nothing is built until it is approved.
+Status: **approved**. Decisions from the product interview (rounds 1 to 5), plus later changes listed in section 13.
 
 ## 1. Product
 
@@ -86,7 +86,7 @@ Admin (`/admin`, login required):
 
 ## 6. Data architecture
 
-Supabase (PostgreSQL + Auth + Storage), with demo seed data from day one.
+PostgreSQL (Supabase in production) accessed directly from the server, S3-compatible photo storage, and staff login built into the app. See section 13.
 
 | Table | Purpose |
 |---|---|
@@ -96,11 +96,12 @@ Supabase (PostgreSQL + Auth + Storage), with demo seed data from day one.
 | `vehicle_photos` | Vehicle, position, storage paths for 3 sizes, dimensions, alt text |
 | `leads` | Type, status, contact data, optional vehicle, type-specific fields (JSON), consent, source URL, notes, timestamps |
 | `whatsapp_clicks` | Vehicle, timestamp (no personal data) |
-| `profiles` | Staff accounts linked to Supabase Auth |
+| `staff`, `sessions` | Staff accounts (scrypt password hashes) and login sessions |
+| `rate_limits` | Hashed keys for form and login rate limiting |
 
-- Row Level Security: the public can read only published vehicles, photos, settings and locations. Leads are inserted only through validated server actions. Staff have full access.
+- The browser never talks to the database. All reads and writes go through the server with `DATABASE_URL`. Row Level Security is enabled with no policies, which blocks Supabase's auto-generated public API.
 - Form protection: server-side validation (pt-BR messages), honeypot field and rate limiting stored in Postgres (no Vercel KV).
-- Photos: on upload, the server generates WebP in 3 sizes (thumbnail, card, full screen) and stores them in Supabase Storage. No dependency on Vercel image optimization.
+- Photos: resized in the browser to fit upload limits, then the server generates WebP in 3 sizes (thumbnail, card, full screen), strips metadata (including GPS) and stores them in S3-compatible storage. No dependency on Vercel image optimization.
 
 ## 7. Stack
 
@@ -110,7 +111,9 @@ Supabase (PostgreSQL + Auth + Storage), with demo seed data from day one.
 | Styling | Tailwind CSS v4 with CSS-variable design tokens | Tokens make per-client accent and light/dark theming a config change |
 | Motion | Motion (`motion/react`) in small client components only | Subtle motion without shipping it on every page |
 | Icons | Phosphor | One consistent icon family |
-| Data, auth, storage | Supabase | Hosted outside Vercel, so a host migration doesn't touch it; data is standard Postgres |
+| Database | PostgreSQL via `postgres` (Supabase in production) | Any Postgres works: Supabase, Neon, or one on a VPS |
+| Login | Built in: scrypt hashes + session cookie | No auth vendor; works on any host |
+| Photos | S3-compatible storage via `aws4fetch`, `sharp` for resizing | Supabase Storage, R2 or S3; local disk in development |
 | Validation | Zod | Shared between forms and server actions |
 | Tests | Vitest (unit), Playwright (journeys, visual checks at 4 widths) | Chromium is already available in the dev environment |
 
@@ -122,7 +125,7 @@ Supabase (PostgreSQL + Auth + Storage), with demo seed data from day one.
 - a Hostinger plan that runs Node.js apps (to be confirmed on the user's account), or
 - a Hostinger VPS (Node + process manager + reverse proxy + SSL), which can host several dealerships on one server.
 
-What stays the same during migration: all application code, the Supabase database, auth and photos, environment variable names. What changes: where the app runs, DNS records and the cache/revalidation behavior (handled by Next.js itself in standalone mode). Vercel-specific services (Blob, KV, Vercel Postgres, Edge Config) are not used. `docs/DEPLOY.md` will cover Vercel deployment, both Hostinger options, environment variables, DNS and risks.
+What stays the same during migration: all application code, the database, photos and staff accounts, environment variable names. What changes: where the app runs, DNS records and the cache/revalidation behavior (handled by Next.js itself in standalone mode). Vercel-specific services (Blob, KV, Vercel Postgres, Edge Config) are not used. `docs/DEPLOY.md` covers Vercel deployment, both Hostinger options, environment variables, DNS and risks.
 
 ## 9. SEO
 
@@ -134,7 +137,7 @@ Mobile first, designed for visitors arriving from Instagram, WhatsApp and Google
 
 ## 11. Implementation phases
 
-1. **Setup:** Next.js project, tooling (lint, format, tests), Supabase schema, RLS and seed data, design tokens.
+1. **Setup:** Next.js project, tooling (lint, format, tests), Postgres schema and seed data, design tokens.
 2. **Shell:** layout, navigation, footer, WhatsApp button, theme from settings.
 3. **Public pages:** home, stock list and filters, vehicle page, about, contact.
 4. **Leads:** all forms, validation, LGPD texts, privacy policy template.
@@ -146,3 +149,7 @@ Mobile first, designed for visitors arriving from Instagram, WhatsApp and Google
 ## 12. Phase 2 candidates
 
 Stock import from dealer management systems (XML/API feeds), Google reviews, financing simulator, trade-in photo upload, email or WhatsApp lead alerts, salesperson rotation, analytics with consent handling, video/360° photos.
+
+## 13. Changes after approval
+
+**2026-10-03, backend access (approved by the user):** the app uses Supabase as a standard PostgreSQL database plus S3-compatible storage, and staff login is built into the app instead of Supabase Auth. Reasons: the admin could be built and tested against a local Postgres in the development environment, and the app no longer depends on Supabase-specific APIs, which makes moving hosts easier. Trade-off: password reset is done by another staff member in Equipe (or with `npm run admin:create`), not by e-mail.
