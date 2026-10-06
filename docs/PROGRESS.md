@@ -29,6 +29,8 @@ Spec: `docs/SPEC.md` (approved; see section 13 for the backend change). Deploy g
 
 ## Next
 
+> 2026-10-06: Supabase credentials are set in the cloud environment, but its network policy blocks `aws-0-sa-east-1.pooler.supabase.com:6543` and `*.storage.supabase.co`, so migrate/seed/admin:create and the upload test are still pending. No Vercel project exists yet.
+
 1. Connect the real Supabase project (see `docs/DEPLOY.md`), then deploy to Vercel.
 2. Replace placeholder photos with real ones through the admin; re-run Lighthouse with photos.
 3. Phase 2 ideas from the spec: stock feed import, Google reviews, financing simulator, lead alerts, logo upload in Configurações.
