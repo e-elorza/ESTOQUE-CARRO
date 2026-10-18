@@ -29,7 +29,7 @@ Spec: `docs/SPEC.md` (approved; see section 13 for the backend change). Deploy g
 
 ## Next
 
-> 2026-10-06: Supabase credentials are set in the cloud environment, but its network policy blocks `aws-0-sa-east-1.pooler.supabase.com:6543` and `*.storage.supabase.co`, so migrate/seed/admin:create and the upload test are still pending. No Vercel project exists yet.
+> 2026-10-18: Vercel project `estoque-carro` (team `elorza`) created and linked to the repo. `S3_*` non-secret vars set for Production and Preview (bucket `vehicle-bucket`, verified with a put/get/delete). Pending: production branch → `site-v1` and the secret vars (`DATABASE_URL`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`) in the dashboard; migrate/seed/admin:create from a machine that can reach the Postgres pooler (cloud sessions cannot: raw TCP is blocked).
 
 1. Connect the real Supabase project (see `docs/DEPLOY.md`), then deploy to Vercel.
 2. Replace placeholder photos with real ones through the admin; re-run Lighthouse with photos.
