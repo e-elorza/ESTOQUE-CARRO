@@ -29,9 +29,8 @@ Spec: `docs/SPEC.md` (approved; see section 13 for the backend change). Deploy g
 
 ## Next
 
-> 2026-10-18: Vercel project `estoque-carro` (team `elorza`) created and linked to the repo. `S3_*` non-secret vars set for Production and Preview (bucket `vehicle-bucket`, verified with a put/get/delete). Pending: production branch → `site-v1` and the secret vars (`DATABASE_URL`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`) in the dashboard; migrate/seed/admin:create from a machine that can reach the Postgres pooler (cloud sessions cannot: raw TCP is blocked).
+> 2026-10-18: **Live on Vercel** at https://estoque-carro-elorza.vercel.app (project `estoque-carro`, team `elorza`, production branch `site-v1`, functions in `gru1`, Vercel Authentication off). All env vars set (bucket `vehicle-bucket`). Supabase migrated and seeded from the owner's machine; admin `enriconelorza@gmail.com` created. Gotchas: the build pre-renders vehicle pages, so it fails if the database is paused or not migrated, and it needs the S3 keys present; Supabase free plan pauses after ~1 week idle (use Pro for a client). Next: upload a real photo through the admin to confirm S3 end to end.
 
-1. Connect the real Supabase project (see `docs/DEPLOY.md`), then deploy to Vercel.
 2. Replace placeholder photos with real ones through the admin; re-run Lighthouse with photos.
 3. Phase 2 ideas from the spec: stock feed import, Google reviews, financing simulator, lead alerts, logo upload in Configurações.
 
