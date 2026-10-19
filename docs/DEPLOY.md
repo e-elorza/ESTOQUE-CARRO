@@ -49,7 +49,7 @@ Names of menus may change slightly; look for the equivalent option in the dashbo
 
 Notes:
 - Photo uploads are resized in the browser and limited to 4 MB per request, below Vercel's 4.5 MB limit.
-- Use the pooler connection string; direct connections (port 5432) can run out with serverless functions.
+- Use the **Transaction pooler** string (port 6543). Not the Session pooler (port 5432 on the pooler host): serverless instances each hold connections and hit its client limit (`EMAXCONNSESSION`). Direct connections can run out too. `src/lib/db.ts` disables prepared statements and pipelining, which transaction-mode poolers do not support.
 
 ## 3. Hostinger (later)
 
