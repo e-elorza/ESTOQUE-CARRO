@@ -14,8 +14,8 @@ function create(): Sql | null {
     prepare: false,
     // Nor pipelining: with several in-flight queries per connection, Supavisor can hand
     // one query's result to another (seen as empty count(*) results on the dashboard).
-    // Supported at runtime but missing from the package's types.
-    ...({ max_pipeline: local ? 100 : 1 } as object),
+    // 0 = one query in flight per connection (1 still allows two). Missing from the types.
+    ...({ max_pipeline: local ? 100 : 0 } as object),
     ssl: local ? false : "require",
     idle_timeout: 20,
     connect_timeout: 10,
