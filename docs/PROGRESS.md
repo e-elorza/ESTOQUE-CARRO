@@ -29,7 +29,7 @@ Spec: `docs/SPEC.md` (approved; see section 13 for the backend change). Deploy g
 
 ## Next
 
-> 2026-10-18: **Live on Vercel** at https://estoque-carro-elorza.vercel.app (project `estoque-carro`, team `elorza`, production branch `site-v1`, functions in `gru1`, Vercel Authentication off). All env vars set (bucket `vehicle-bucket`). Supabase migrated and seeded from the owner's machine; admin `enriconelorza@gmail.com` created. Gotchas: the build pre-renders vehicle pages, so it fails if the database is paused or not migrated, and it needs the S3 keys present; Supabase free plan pauses after ~1 week idle (use Pro for a client). Next: upload a real photo through the admin to confirm S3 end to end.
+> 2026-10-19: **Live and verified** at https://estoque-carro-elorza.vercel.app (Vercel project `estoque-carro`, team `elorza`, production branch `site-v1`, functions in `gru1`). Supabase migrated and seeded; admin `enriconelorza@gmail.com` logs in; a photo uploaded through the admin shows on the public site (S3 bucket `vehicle-bucket`). DB: Supabase **Transaction pooler** (port 6543) with prepared statements and pipelining disabled in `src/lib/db.ts` (`max_pipeline: 0`); pipelining gave mixed-up/empty results and hung logins, and the Session pooler (5432) hit its 15-client limit on Vercel. Gotchas: the build pre-renders vehicle pages, so it fails if the database is paused or unmigrated, and needs the S3 keys; Supabase free plan pauses after ~1 week idle (use Pro for a client); Hobby keeps runtime logs for 1 hour.
 
 2. Replace placeholder photos with real ones through the admin; re-run Lighthouse with photos.
 3. Phase 2 ideas from the spec: stock feed import, Google reviews, financing simulator, lead alerts, logo upload in Configurações.
