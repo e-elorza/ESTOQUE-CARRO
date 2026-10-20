@@ -80,7 +80,10 @@ export type Vehicle = {
   price: number;
   promoPrice: number | null;
   status: VehicleStatus;
-  featured: boolean;
+  /** Home page pick: order among active picks (1 = hero), null when not picked. */
+  featuredPosition: number | null;
+  /** When the pick ends (ISO), null for no end date. */
+  featuredUntil: string | null;
   badges: Badge[];
   locationId: string | null;
   description: string;
@@ -102,6 +105,9 @@ export type VehicleIndexEntry = Pick<
   | "color"
   | "locationId"
   | "equipment"
-  | "featured"
   | "createdAt"
-> & { price: number };
+> & {
+  price: number;
+  /** Position of an active home page pick, else null. */ featuredRank:
+    number | null;
+};

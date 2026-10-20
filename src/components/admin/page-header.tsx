@@ -50,7 +50,10 @@ export function Panel({
   actions?: React.ReactNode;
 }) {
   return (
-    <section className="rounded-ui border border-line bg-surface">
+    <section
+      aria-label={title}
+      className="rounded-ui border border-line bg-surface"
+    >
       {title && (
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3">
           <h2 className="font-semibold">{title}</h2>

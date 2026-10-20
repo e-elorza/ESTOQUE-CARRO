@@ -1,4 +1,5 @@
 /** Row <-> domain mapping for Postgres queries. */
+import type { requireSql } from "../db";
 import { storage } from "../storage";
 import type {
   DealershipSettings,
@@ -28,7 +29,9 @@ export type VehicleRow = {
   price: number;
   promo_price: number | null;
   status: Vehicle["status"];
-  featured: boolean;
+  /** Missing until migration 0002 runs. */
+  featured_position?: number | null;
+  featured_until?: Date | string | null;
   badges: string[];
   location_id: string | null;
   description: string;
@@ -86,7 +89,8 @@ export function toVehicle(r: VehicleRow): Vehicle & { updatedAt: string } {
     price: r.price,
     promoPrice: r.promo_price,
     status: r.status,
-    featured: r.featured,
+    featuredPosition: r.featured_position ?? null,
+    featuredUntil: r.featured_until ? iso(r.featured_until) : null,
     badges: r.badges as Vehicle["badges"],
     locationId: r.location_id,
     description: r.description,
@@ -182,3 +186,15 @@ export const VEHICLE_SELECT = `
        from vehicle_photos p where p.vehicle_id = v.id),
       '[]'::json) as photos
   from vehicles v`;
+
+/** WhatsApp button clicks per vehicle over the last `days` days (anonymous counter). */
+export async function clicksByVehicle(
+  db: ReturnType<typeof requireSql>,
+  days: number,
+): Promise<Record<string, number>> {
+  const rows = await db<{ vehicle_id: string; count: number }[]>`
+    select vehicle_id, count(*)::int as count from whatsapp_clicks
+    where vehicle_id is not null and created_at > now() - make_interval(days => ${days})
+    group by vehicle_id`;
+  return Object.fromEntries(rows.map((r) => [r.vehicle_id, r.count]));
+}

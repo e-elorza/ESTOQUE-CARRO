@@ -107,6 +107,71 @@ test("cadastra veículo, envia foto e o carro aparece no site", async ({
   ).toBeVisible();
 });
 
+test("destaques: adiciona, reordena para a capa e remove", async ({ page }) => {
+  await login(page);
+  await page.getByRole("link", { name: "Destaques" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Destaques");
+
+  // Free a slot if all are taken (the demo data starts with 5 picks)
+  if (await page.getByText(/As 5 vagas estão ocupadas/).isVisible()) {
+    await page
+      .getByRole("region", { name: "Escolhidos por vocês" })
+      .getByRole("button", { name: "Remover" })
+      .last()
+      .click();
+    await expect(page.getByText("Destaque removido.")).toBeVisible();
+  }
+
+  const option = page.getByLabel("Carro").locator("option", { hasText: MODEL });
+  await page
+    .getByLabel("Carro")
+    .selectOption((await option.getAttribute("value"))!);
+  await page.getByLabel("Por quanto tempo").selectOption("14");
+  await page.getByRole("button", { name: "Adicionar" }).click();
+  await expect(page.getByText("Destaque adicionado.")).toBeVisible();
+
+  // Move it to the top: it becomes the hero
+  const picks = page.getByRole("region", { name: "Escolhidos por vocês" });
+  const item = picks.getByRole("listitem").filter({ hasText: MODEL });
+  let position = Number(
+    (await item.textContent())?.match(/Posição (\d+)/)?.[1],
+  );
+  while (position > 1) {
+    await item.getByRole("button", { name: /^Subir/ }).click();
+    position -= 1;
+    await expect(item).toContainText(`Posição ${position}.`);
+  }
+  const preview = page.getByRole("region", {
+    name: "Como está a página inicial agora",
+  });
+  await expect(preview.getByRole("listitem").first()).toContainText(MODEL);
+  await expect(preview.getByRole("listitem").first()).toContainText("Capa");
+  await expect(item).toContainText(/faltam 1[34] dias/);
+
+  await page.goto("/");
+  await expect(
+    page.getByRole("link", { name: new RegExp(`^Ver Volkswagen ${MODEL}`) }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Destaques da semana" }),
+  ).toContainText(MODEL);
+
+  // The vehicle page shows the pick and links to the list
+  await page.goto(`/admin/veiculos?q=${encodeURIComponent(stamp)}`);
+  await page.getByRole("link", { name: new RegExp(MODEL) }).click();
+  await expect(page.getByText("Destaque nº 1")).toBeVisible();
+
+  // Clean up
+  await page.goto("/admin/destaques");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: MODEL })
+    .first()
+    .getByRole("button", { name: "Remover" })
+    .click();
+  await expect(page.getByText("Destaque removido.")).toBeVisible();
+});
+
 test("marcar como vendido tira o carro do estoque e mantém a página", async ({
   page,
 }) => {

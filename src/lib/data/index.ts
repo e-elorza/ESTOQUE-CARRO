@@ -7,6 +7,7 @@
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { sql } from "../db";
+import { CLICK_WINDOW_DAYS, FEATURED_SLOTS, pickFeatured } from "../featured";
 import { compare, matches, toIndexEntry, type Filters } from "../filters";
 import type {
   DealershipSettings,
@@ -15,6 +16,7 @@ import type {
   VehicleIndexEntry,
 } from "../types";
 import {
+  clicksByVehicle,
   toLocation,
   toSettings,
   toVehicle,
@@ -33,26 +35,30 @@ type Catalog = {
   settings: DealershipSettings;
   locations: Location[];
   vehicles: PublicVehicle[];
+  /** WhatsApp clicks per vehicle id over the last CLICK_WINDOW_DAYS days. */
+  clicks: Record<string, number>;
 };
 
 async function loadFromDb(): Promise<Catalog> {
   const db = sql!;
-  const [settingsRows, locationRows, vehicleRows] = await Promise.all([
+  const [settingsRows, locationRows, vehicleRows, clicks] = await Promise.all([
     db<SettingsRow[]>`select * from dealership_settings limit 1`,
     db<LocationRow[]>`select * from locations order by sort_order, name`,
     db.unsafe<VehicleRow[]>(
       `${VEHICLE_SELECT} where v.status <> 'rascunho' order by v.created_at desc`,
     ),
+    clicksByVehicle(db, CLICK_WINDOW_DAYS),
   ]);
   return {
     // Fall back to the demo identity until settings are saved in the admin.
     settings: settingsRows[0] ? toSettings(settingsRows[0]) : seedSettings,
     locations: locationRows.map(toLocation),
     vehicles: vehicleRows.map(toVehicle),
+    clicks,
   };
 }
 
-const loadCachedFromDb = unstable_cache(loadFromDb, ["catalog-v1"], {
+const loadCachedFromDb = unstable_cache(loadFromDb, ["catalog-v2"], {
   tags: [CATALOG_TAG],
   revalidate: 300,
 });
@@ -65,6 +71,7 @@ const loadCatalog = cache(async (): Promise<Catalog> => {
     vehicles: seedVehicles
       .filter((v) => v.status !== "rascunho")
       .map((v) => ({ ...v, updatedAt: v.createdAt })),
+    clicks: {},
   };
 });
 
@@ -126,12 +133,12 @@ export async function getPublicSlugs(): Promise<
   }));
 }
 
-export async function getFeatured(limit = 6): Promise<Vehicle[]> {
-  const listed = await getListedVehicles();
-  return listed
-    .filter((v) => v.featured && v.status === "disponivel")
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .slice(0, limit);
+/** Home page highlights: staff picks first, free slots filled automatically (see lib/featured). */
+export async function getFeatured(limit = FEATURED_SLOTS): Promise<Vehicle[]> {
+  const { clicks } = await loadCatalog();
+  return pickFeatured(await getListedVehicles(), clicks, { limit }).map(
+    (e) => e.vehicle,
+  );
 }
 
 export async function getRecent(

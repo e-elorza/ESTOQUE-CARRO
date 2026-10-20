@@ -11,6 +11,7 @@ import {
   vehicleStatusCounts,
   vehicleStatusLabel,
 } from "@/lib/data/admin";
+import { isFeatureActive } from "@/lib/featured";
 import { formatKm, formatPrice, formatYears } from "@/lib/format";
 import { vehicleTone } from "../ui";
 
@@ -151,7 +152,7 @@ export default async function VehiclesPage({ searchParams }: Props) {
                   <span className="tabular font-semibold">
                     {formatPrice(v.promoPrice ?? v.price)}
                   </span>
-                  {v.featured && (
+                  {isFeatureActive(v) && (
                     <span className="text-xs text-muted">Destaque</span>
                   )}
                 </div>

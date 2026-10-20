@@ -56,7 +56,6 @@ export async function saveVehicle(
     price: d.price,
     promo_price: d.promoPrice,
     status: d.status,
-    featured: d.featured,
     badges: d.badges,
     location_id: d.locationId,
     description: d.description,
