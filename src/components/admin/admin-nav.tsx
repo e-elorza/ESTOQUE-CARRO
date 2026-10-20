@@ -7,6 +7,7 @@ import {
   Gear,
   List,
   MapPin,
+  Star,
   Users,
   X,
 } from "@phosphor-icons/react";
@@ -17,6 +18,7 @@ import { useEffect, useRef } from "react";
 const items = [
   { href: "/admin", label: "Painel", icon: Gauge, exact: true },
   { href: "/admin/veiculos", label: "Veículos", icon: Car },
+  { href: "/admin/destaques", label: "Destaques", icon: Star },
   {
     href: "/admin/leads",
     label: "Leads",

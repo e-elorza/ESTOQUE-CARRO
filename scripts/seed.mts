@@ -35,11 +35,11 @@ await sql.begin(async (tx) => {
   for (const v of seedVehicles) {
     await tx`
       insert into vehicles (code, slug, brand, model, version, year_manufacture, year_model, mileage_km, transmission,
-        fuel, body_type, color, doors, engine, power_cv, plate_final, price, promo_price, status, featured, badges,
+        fuel, body_type, color, doors, engine, power_cv, plate_final, price, promo_price, status, featured, featured_position, featured_until, badges,
         location_id, description, equipment, sold_at, created_at)
       values (${v.code}, ${v.slug}, ${v.brand}, ${v.model}, ${v.version}, ${v.yearManufacture}, ${v.yearModel},
         ${v.mileageKm}, ${v.transmission}, ${v.fuel}, ${v.bodyType}, ${v.color}, ${v.doors}, ${v.engine}, ${v.powerCv},
-        ${v.plateFinal}, ${v.price}, ${v.promoPrice}, ${v.status}, ${v.featured}, ${v.badges}, ${v.locationId},
+        ${v.plateFinal}, ${v.price}, ${v.promoPrice}, ${v.status}, ${v.featuredPosition != null}, ${v.featuredPosition}, ${v.featuredUntil}, ${v.badges}, ${v.locationId},
         ${v.description}, ${v.equipment}, ${v.status === "vendido" ? v.createdAt : null}, ${v.createdAt})`;
   }
 });

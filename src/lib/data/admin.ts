@@ -1,8 +1,15 @@
 /** Read queries for the admin. Every caller must have passed requireStaff(). */
 import { requireSql } from "../db";
+import {
+  CLICK_WINDOW_DAYS,
+  isFeatureActive,
+  pickFeatured,
+  type FeaturedEntry,
+} from "../featured";
 import type { LeadType } from "../leads";
 import type { Location, Vehicle, VehicleStatus } from "../types";
 import {
+  clicksByVehicle,
   toLocation,
   toSettings,
   toVehicle,
@@ -164,6 +171,40 @@ export async function listVehiclesAdmin({
     params,
   );
   return rows.map(toVehicle);
+}
+
+/** Home page highlights for the admin: the picks, what the site shows now and what can be added. */
+export async function getFeaturedAdmin(): Promise<{
+  active: AdminVehicle[];
+  expired: AdminVehicle[];
+  available: AdminVehicle[];
+  preview: FeaturedEntry<AdminVehicle>[];
+}> {
+  const sql = requireSql();
+  const [picked, available, clicks] = await Promise.all([
+    sql.unsafe<VehicleRow[]>(
+      `${VEHICLE_SELECT} where v.featured_position is not null order by v.featured_position, v.created_at desc`,
+    ),
+    sql.unsafe<VehicleRow[]>(
+      `${VEHICLE_SELECT} where v.status = 'disponivel' order by v.brand, v.model, v.created_at desc`,
+    ),
+    clicksByVehicle(sql, CLICK_WINDOW_DAYS),
+  ]);
+  const picks = picked.map(toVehicle);
+  const availableVehicles = available.map(toVehicle);
+  return {
+    active: picks.filter((v) => isFeatureActive(v)),
+    expired: picks.filter((v) => !isFeatureActive(v)),
+    available: availableVehicles,
+    preview: pickFeatured(availableVehicles, clicks),
+  };
+}
+
+export async function countActiveFeatured(): Promise<number> {
+  const [{ n }] = await requireSql()<{ n: number }[]>`
+    select count(*)::int as n from vehicles
+    where featured_position is not null and (featured_until is null or featured_until > now())`;
+  return n;
 }
 
 export async function vehicleStatusCounts(): Promise<Record<string, number>> {

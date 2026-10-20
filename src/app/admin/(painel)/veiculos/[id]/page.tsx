@@ -8,17 +8,25 @@ import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { requireStaff } from "@/lib/auth/session";
 import {
+  countActiveFeatured,
   getVehicleAdmin,
   listLocationsAdmin,
   vehicleStatusLabel,
 } from "@/lib/data/admin";
+import {
+  FEATURED_DEFAULT_DAYS,
+  FEATURED_SLOTS,
+  isFeatureActive,
+} from "@/lib/featured";
 import type { VehicleStatus } from "@/lib/types";
+import { addFeatured } from "../../../_actions/featured";
 import {
   deleteVehicle,
   duplicateVehicle,
   setVehicleStatus,
 } from "../../../_actions/vehicles";
-import { vehicleTone } from "../../ui";
+import { PickNotice } from "../../destaques/notice";
+import { formatPickEnd, vehicleTone } from "../../ui";
 import { PhotoManager } from "../photo-manager";
 import { VehicleForm } from "../vehicle-form";
 
@@ -41,11 +49,13 @@ const quickStatus: { value: VehicleStatus; label: string }[] = [
 export default async function EditVehiclePage({ params, searchParams }: Props) {
   await requireStaff();
   const [{ id }, sp] = await Promise.all([params, searchParams]);
-  const [vehicle, locations] = await Promise.all([
+  const [vehicle, locations, featuredCount] = await Promise.all([
     getVehicleAdmin(id),
     listLocationsAdmin(),
+    countActiveFeatured(),
   ]);
   if (!vehicle) notFound();
+  const featured = isFeatureActive(vehicle);
 
   return (
     <>
@@ -98,6 +108,40 @@ export default async function EditVehiclePage({ params, searchParams }: Props) {
             <Copy size={16} aria-hidden /> Duplicar
           </SubmitButton>
         </form>
+      </div>
+
+      <PickNotice code={sp.destaque} />
+      <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-ui border border-line bg-surface p-3 text-sm">
+        <span className="px-1 text-muted">Página inicial:</span>
+        {featured ? (
+          <>
+            <Badge tone="accent">Destaque nº {vehicle.featuredPosition}</Badge>
+            <span>{formatPickEnd(vehicle.featuredUntil)}</span>
+          </>
+        ) : vehicle.status !== "disponivel" ? (
+          <span className="text-muted">
+            Só carros disponíveis podem ser destaque.
+          </span>
+        ) : featuredCount >= FEATURED_SLOTS ? (
+          <span className="text-muted">
+            Fora dos destaques. As {FEATURED_SLOTS} vagas estão ocupadas.
+          </span>
+        ) : (
+          <form action={addFeatured}>
+            <input type="hidden" name="id" value={vehicle.id} />
+            <input type="hidden" name="dias" value={FEATURED_DEFAULT_DAYS} />
+            <input type="hidden" name="from" value="veiculo" />
+            <SubmitButton variant="ghost" size="sm" pendingLabel="Salvando…">
+              Destacar por {FEATURED_DEFAULT_DAYS} dias
+            </SubmitButton>
+          </form>
+        )}
+        <Link
+          href="/admin/destaques"
+          className="text-accent-text hover:underline sm:ml-auto"
+        >
+          Gerenciar destaques
+        </Link>
       </div>
 
       <div className="mb-6">

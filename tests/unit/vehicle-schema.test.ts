@@ -26,7 +26,6 @@ describe("vehicle form", () => {
   it("parses masked numbers, checkboxes and extra equipment", () => {
     const fd = form([
       ...base,
-      ["featured", "on"],
       ["badges", "unico_dono"],
       ["equipment", "ABS"],
       ["equipmentExtra", "Volante com aletas, ABS"],
@@ -34,7 +33,6 @@ describe("vehicle form", () => {
     const r = vehicleSchema.parse(vehicleFormToObject(fd));
     expect(r.price).toBe(149900);
     expect(r.mileageKm).toBe(38700);
-    expect(r.featured).toBe(true);
     expect(r.badges).toEqual(["unico_dono"]);
     expect(r.equipment).toEqual(["ABS", "Volante com aletas"]);
     expect(r.promoPrice).toBeNull();

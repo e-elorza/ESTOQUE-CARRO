@@ -44,3 +44,20 @@ export function vehicleTone(
     } as const
   )[status];
 }
+
+const dayMonth = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "America/Sao_Paulo",
+});
+
+/** "Até 27/10, faltam 5 dias", "Venceu em 20/10" or "Sem prazo" for a home page pick. */
+export function formatPickEnd(iso: string | null, now = Date.now()): string {
+  if (!iso) return "Sem prazo";
+  const ms = Date.parse(iso) - now;
+  const date = dayMonth.format(new Date(iso));
+  if (ms <= 0) return `Venceu em ${date}`;
+  const days = Math.floor(ms / 86_400_000);
+  if (days === 0) return `Até ${date}, termina em menos de 24 horas`;
+  return `Até ${date}, ${days === 1 ? "falta 1 dia" : `faltam ${days} dias`}`;
+}

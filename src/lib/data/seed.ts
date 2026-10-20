@@ -746,6 +746,12 @@ function daysAgoIso(days: number): string {
   return d.toISOString();
 }
 
+// Demo picks: the featured rows, newest first, valid for a week from startup.
+const featuredOrder = rows
+  .filter((r) => r.featured)
+  .sort((a, b) => a.daysAgo - b.daysAgo);
+const featuredUntil = new Date(Date.now() + 7 * 86_400_000).toISOString();
+
 export const seedVehicles: Vehicle[] = rows.map((r, i) => {
   const code = `${seedSettings.codePrefix}-${String(140 + i).padStart(4, "0")}`;
   return {
@@ -769,7 +775,8 @@ export const seedVehicles: Vehicle[] = rows.map((r, i) => {
     price: r.price,
     promoPrice: r.promo ?? null,
     status: r.status ?? "disponivel",
-    featured: r.featured ?? false,
+    featuredPosition: r.featured ? featuredOrder.indexOf(r) + 1 : null,
+    featuredUntil: r.featured ? featuredUntil : null,
     badges: r.badges ?? [],
     locationId: r.location,
     description: `${r.note} ${r.model} ${r.version}, cor ${r.color.toLowerCase()}, ${

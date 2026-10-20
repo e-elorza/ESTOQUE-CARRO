@@ -78,7 +78,6 @@ export const vehicleSchema = z
       "Preço promocional inválido.",
     ).transform((v) => v ?? null),
     status: z.enum(["disponivel", "reservado", "vendido", "rascunho"]),
-    featured: z.preprocess((v) => v === "on", z.boolean()),
     badges: z.array(z.enum(["unico_dono", "baixa_km"])).default([]),
     locationId: z
       .string()

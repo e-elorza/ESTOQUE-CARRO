@@ -2,6 +2,7 @@
  * Stock filters: URL (de)serialisation and pure matching/sorting.
  * Shared by the server (results) and the client (live counts in the filter panel).
  */
+import { activeFeatureRank } from "./featured";
 import { effectivePrice, slugify } from "./format";
 import type {
   BodyType,
@@ -150,7 +151,7 @@ export function toIndexEntry(v: Vehicle): VehicleIndexEntry {
     color: v.color,
     locationId: v.locationId,
     equipment: v.equipment,
-    featured: v.featured,
+    featuredRank: activeFeatureRank(v),
     createdAt: v.createdAt,
   };
 }
@@ -195,7 +196,7 @@ export function compare(sort: SortValue) {
         );
       case "destaques":
         return (
-          Number(b.featured) - Number(a.featured) ||
+          (a.featuredRank ?? Infinity) - (b.featuredRank ?? Infinity) ||
           b.createdAt.localeCompare(a.createdAt)
         );
       default:

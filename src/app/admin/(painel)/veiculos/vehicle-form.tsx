@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { SubmitButton } from "@/components/admin/buttons";
 import { useUnsavedChanges } from "@/components/admin/use-unsaved-changes";
 import {
-  CheckboxField,
   CheckboxGroupField,
   FormMessage,
   FormStateContext,
@@ -167,11 +166,6 @@ export function VehicleForm({
             />
           </div>
           <div className="flex flex-col gap-3">
-            <CheckboxField
-              name="featured"
-              label="Destaque na página inicial"
-              defaultChecked={vehicle?.featured}
-            />
             <CheckboxGroupField
               name="badges"
               label="Selos"

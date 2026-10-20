@@ -15,11 +15,12 @@ Spec: `docs/SPEC.md` (approved; see section 13 for the backend change). Deploy g
 **Admin** (`/admin`, phase 5):
 - Login with scrypt-hashed passwords and session cookies, login rate limit, forced password change for temporary passwords, logout.
 - Painel: stock and lead numbers, cars without photos, recent leads, WhatsApp clicks (30 days).
+- Destaques (2026-10-20): up to 5 staff picks for "Destaques da semana", ordered with arrows (1st = home hero), each valid for 7/14/30 days and renewable; free slots filled automatically by WhatsApp clicks in the last 7 days, then newest arrivals, preferring cars with photos (`src/lib/featured.ts`, `/admin/destaques`, migration `0002_featured_slots.sql`). The vehicle page shows the pick and has "Destacar por 7 dias". The old `featured` column is kept in sync for rollback; drop it later.
 - Veículos: list with search and status tabs; create/edit with full form (pt-BR validation); quick status (disponível, reservado, vendido); duplicate; delete with inline confirmation; photos with browser-side resize, server WebP in 3 sizes (metadata stripped), drag or arrow reordering, cover = first photo.
 - Leads: inbox with status and type filters; detail with "Responder no WhatsApp", call, request details, consent record, status and internal notes, permanent deletion (LGPD requests).
 - Unidades, Configurações (identity, accent color with contrast check, light/dark theme, contacts, "Por que comprar aqui", SEO), Equipe (create access with temporary password, reset, remove), Minha conta.
 
-**Tests:** 13 unit tests; 23 Playwright tests (16 public journeys on desktop and mobile, 7 admin journeys, which need a database).
+**Tests:** 23 unit tests; 24 Playwright tests passing (16 public journeys on desktop and mobile, 8 admin journeys on desktop, which need a database). Run e2e without the `S3_*` vars (the photo test expects local storage) and clear `rate_limits` between repeated runs (lead forms allow 5 per window).
 
 **Quality pass (phases 6 and 7, 2026-10-03):**
 - `web-design-guidelines` review applied: image dimensions, `overscroll-behavior: contain` on dialogs and sheets, no spellcheck on e-mail and password fields, `touch-action: manipulation`, `translate="no"` on the brand name, confirmation before deleting a photo, unsaved-changes warning on the vehicle and settings forms, `content-visibility` on long admin lists. Skipped on purpose: "Title Case" (English convention; pt-BR uses sentence case).
